@@ -1,0 +1,41 @@
+DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS word;
+DROP TABLE IF EXISTS vocab;
+DROP TABLE IF EXISTS vocab_progress;
+COMMIT;
+
+CREATE TABLE user (
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    username VARCHAR(32) NOT NULL,
+    password VARCHAR(128) NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE (username)
+);
+
+CREATE TABLE word (
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    word VARCHAR(256) NOT NULL,
+    toki BOOLEAN NOT NULL,
+    type VARCHAR(128),
+    official BOOLEAN DEFAULT true,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE vocab (
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    english INTEGER NOT NULL,
+    toki INTEGER NOT NULL,
+    comment VARCHAR(256),
+    level INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE vocab_progress (
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    vocab INTEGER NOT NULL,
+    correct INTEGER DEFAULT 0,
+    tries INTEGER DEFAULT 0,
+    user INTEGER NOT NULL,
+    PRIMARY KEY (id)
+);
+COMMIT;
