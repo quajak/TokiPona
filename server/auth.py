@@ -9,7 +9,6 @@ from flask_jwt_extended import (
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 from mysql.connector import Error
-from flask_wtf.csrf import generate_csrf
 
 from server.db import get_db
 
@@ -144,7 +143,3 @@ def load_logged_in_user():
             cursor.execute("SELECT * FROM user  where id = %s", (user_id,))
             g.user = cursor.fetchone()
             
-# @bp.after_request
-# def set_xsrf_cookie(response):
-#     response.set_cookie("X-CSRF-TOKEN", generate_csrf())
-#     return response
