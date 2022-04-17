@@ -1,8 +1,8 @@
 import os
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, unset_access_cookies
 
 
 def create_app(test_config=None):
@@ -26,7 +26,7 @@ def create_app(test_config=None):
         JWT_TOKEN_LOCATION = ["cookies"],
         JWT_COOKIE_CSRF_PROTECT = True,
         JWT_CSRF_CHECK_FORM = True,
-        JWT_ACCESS_CSRF_HEADER_NAME = "X-XSRF-TOKEN"
+        JWT_ACCESS_CSRF_HEADER_NAME = "X-CSRF-TOKEN"
     )
     
     if test_config is None:
@@ -52,4 +52,9 @@ def create_app(test_config=None):
     
     jwt = JWTManager(app)
     
+    @jwt.expired_token_loader
+    def expired_token_callback(header, data):
+        res = jsonify({"success": False, "error": "The token has expired"})
+        unset_access_cookies(res)
+        return res, 401
     return app

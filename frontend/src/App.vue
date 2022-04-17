@@ -28,6 +28,9 @@ const loggedIn = computed(() => store.state.isLoggedIn)
             </div>
             <div v-else>
               <li class="nav-item">
+                <router-link to="/flashcard" class="nav-link">Practise</router-link>
+              </li>
+              <li class="nav-item">
                 <router-link to="/logout" class="nav-link">Logout</router-link>
               </li>
             </div>

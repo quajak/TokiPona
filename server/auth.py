@@ -1,11 +1,12 @@
 import functools
+from datetime import datetime, timedelta, timezone
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, make_response, jsonify
 )
 from flask_jwt_extended import (
     create_access_token, create_refresh_token, set_access_cookies, set_refresh_cookies, unset_jwt_cookies, JWTManager,
-    unset_access_cookies, get_jwt_identity, jwt_required
+    unset_access_cookies, get_jwt_identity, jwt_required, get_jwt
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 from mysql.connector import Error
@@ -14,36 +15,16 @@ from server.db import get_db
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
-def assign_access_refresh_tokens(user_id: int, url):
+def assign_access_refresh_tokens(user_id: int):
     access_token = create_access_token(identity=str(user_id))
-    refresh_token = create_refresh_token(identity=str(user_id))
     resp = make_response(jsonify({"success": True}))
     set_access_cookies(resp, access_token)
-    set_refresh_cookies(resp, refresh_token)
     return resp
     
 def unset_jwt():
     resp = make_response(jsonify({"success": True}))
     unset_jwt_cookies(resp)
     return resp
-
-def congiure_jwtmanager(jwt: JWTManager) -> JWTManager:
-    @jwt.unauthorized_loader
-    def unauthorized_callback(callback):
-        return redirect("/")
-
-    @jwt.invalid_token_loader
-    def invalid_token_callback(callback):
-        resp = make_response(redirect(url_for("auth.register")))
-        unset_jwt_cookies(resp)
-        return resp, 302
-    
-    @jwt.expired_token_loader
-    def expired_token_callback(callback):
-        resp = make_response(redirect(url_for("auth.refresh")))
-        unset_access_cookies(resp)
-        return resp, 302
-    return jwt
 
 @bp.route("/register", methods=["POST"])
 def register():
@@ -74,6 +55,17 @@ def register():
                 error = "Username already exists"
             
             # now initialize learning progress
+            
+            cursor.execute("SELECT id FROM user WHERE username = %s", (username, ))
+            user_id = cursor.fetchone()
+
+            cursor.execute(
+                """
+                INSERT INTO vocab_progress (vocab, user)
+                (SELECT id, %s from vocab)
+                """, user_id
+            )
+            db.commit()
 
             if error is None:
                 return jsonify({"success": True})
@@ -104,7 +96,7 @@ def login():
     if error is None:
         session.clear()
         session["user_id"] = user["id"]
-        return assign_access_refresh_tokens(user["id"], "/")
+        return assign_access_refresh_tokens(user["id"])
     
     return jsonify({"success": False, "error": error})
     
@@ -140,6 +132,20 @@ def load_logged_in_user():
         g.user = None
     else:
         with get_db().cursor(dictionary=True, buffered=True) as cursor:
-            cursor.execute("SELECT * FROM user  where id = %s", (user_id,))
+            cursor.execute("SELECT * FROM user where id = %s", (user_id,))
             g.user = cursor.fetchone()
             
+            
+@bp.after_request
+def refresh_expiring_jwts(response):
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+        if target_timestamp > exp_timestamp:
+            access_token = create_access_token(identity=get_jwt_identity())
+            set_access_cookies(response, access_token)
+        return response
+    except (RuntimeError, KeyError):
+        # Case where there is not a valid JWT. Just return the original respone
+        return response
