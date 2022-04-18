@@ -8,6 +8,8 @@ const error = ref("")
 const username = ref("");
 const password = ref("");
 
+const { redirectReason } = defineProps<{redirectReason: string}>()
+
 const router = useRouter()
 const store = useStore()
 

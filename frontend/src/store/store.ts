@@ -29,8 +29,7 @@ const actions = {
     },
 
     async loginUser(context: Context, login: UserLogin){
-        const data = await authService.post("/login", {"username": login.username, "password": login.password}, { withCredentials: true 
-        })
+        const data = await authService.post("/login", {"username": login.username, "password": login.password}, { withCredentials: true })
         context.dispatch(ActionTypes.fetchUser);
         return data    
     },
@@ -41,7 +40,7 @@ const actions = {
     },
 
     async logoutUser(context: Context) {
-        await authService.post("/logout", { withCredentials: true })
+        await authService.get("/logout", { withCredentials: true })
         context.commit(MutationTypes.logoutUserState, undefined)
     }
 };

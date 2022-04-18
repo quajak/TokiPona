@@ -8,7 +8,7 @@ import App from './App.vue'
 import HelloWorld from "./components/HelloWorld.vue"
 import { createRouter, createWebHashHistory, RouterView } from 'vue-router'
 import Login from "./components/Login.vue"
-import store, { ActionTypes } from './store/store'
+import store, { ActionTypes, MutationTypes } from './store/store'
 import Register from "./components/Register.vue"
 import axios from 'axios'
 import Logout from "./components/Logout.vue"
@@ -26,7 +26,8 @@ axios.defaults.xsrfHeaderName = "X-CSRF-TOKEN"
 // We'll talk about nested routes later.
 const routes = [
   {path: "/", component: HelloWorld},
-  { path: '/login', component: Login },
+  { path: '/login', component: Login, props: {redirectReason: ""} },
+  { path: '/relogin', component: Login, props: true },
   { path: '/register', component: Register },
   { path: '/logout', component: Logout },
   { path: "/flashcard", component: Flashcard}
@@ -56,6 +57,20 @@ app.use(Oruga, {
 
 app.mount('#app')
 
+axios.interceptors.response.use(function (response) {
+    // Do something with response data
+    return response;
+  }, function (error) {
+    console.log(error)
+    if(error.code == 401){
+      router.push({path: "/relogin", params: {redirectReason: "Due to inactivity you have to login again"}})
+      store.commit(MutationTypes.logoutUserState)
+    }
+    // Do something with response error
+    return Promise.reject(error);
+  });
+
 // get start up data
 
 store.dispatch(ActionTypes.fetchUser)
+

@@ -4,37 +4,47 @@
 import {useStore} from "vuex";
 import {ActionTypes} from "./store/store"
 import { useRouter} from "vue-router"
-import {computed} from "vue";
+import {computed, ref} from "vue";
 
 const store = useStore()
 
 const loggedIn = computed(() => store.state.isLoggedIn)
 
+const expanded = ref(false);
+
 </script>
 
 <template>
   <div>
-    <nav class="navbar navbar-expand-lg navbar-light bg-primary bg-gradient">
-      <div class="container-fluid">
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            <div v-if="!loggedIn">
-              <li class="nav-item">
-                <router-link to="/login" class="nav-link">Login</router-link>
-              </li>
-              <li>
-                <router-link to="/register" class="nav-link">Register</router-link>
-              </li>
-            </div>
-            <div v-else>
-              <li class="nav-item">
-                <router-link to="/flashcard" class="nav-link">Practise</router-link>
-              </li>
-              <li class="nav-item">
-                <router-link to="/logout" class="nav-link">Logout</router-link>
-              </li>
-            </div>
-          </ul>
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <h3 class="title is-3" style="margin: 0px">Kama Sona</h3>
+
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" @click="expanded = !expanded" :class="expanded ? 'is-active' : ''">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div class="navbar-menu" :class="expanded ? 'is-active' : ''">
+        <div class="navbar-start">
+          <div class="navbar-item">
+            <router-link to="/">Home</router-link>
+          </div>
+          <div class="navbar-item" v-if="loggedIn">
+            <router-link to="/flashcard">Practise</router-link>
+          </div>
+        </div>
+        <div class="navbar-end">
+          <div class="navbar-item" v-if="!loggedIn">
+            <router-link to="/login" class="nav-link">Login</router-link>
+          </div>
+          <div class="navbar-item" v-if="!loggedIn">
+            <router-link to="/register" class="nav-link">Register</router-link>
+          </div>
+          <div class="navbar-item" v-if="loggedIn">
+            <router-link to="/logout" class="nav-link">Logout</router-link>
+          </div>
         </div>
       </div>
     </nav>
@@ -49,6 +59,5 @@ const loggedIn = computed(() => store.state.isLoggedIn)
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>

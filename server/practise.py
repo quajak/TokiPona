@@ -54,13 +54,16 @@ def vocab():
         english = cursor.fetchone()
         cursor.execute(
             """
-            SELECT word
-            FROM word
-            WHERE 
-                id != %s AND toki = 0
+            SELECT w.word
+                        FROM word w
+                            INNER JOIN vocab v
+                                on w.id = v.english
+                                INNER JOIN word j
+                                    on v.toki = j.id
+                                    WHERE j.word != %s
             ORDER BY RAND()
             LIMIT 3;
-            """, (vocab["english"],)
+            """, (toki["word"],)
         )
         wrong_english = [option["word"] for option in cursor.fetchall()]
     

@@ -22,8 +22,8 @@ def assign_access_refresh_tokens(user_id: int):
     return resp
     
 def unset_jwt():
-    resp = make_response(jsonify({"success": True}))
-    unset_jwt_cookies(resp)
+    resp = make_response(jsonify({"success": True, "no_jwt": True}))
+    unset_access_cookies(resp)
     return resp
 
 @bp.route("/register", methods=["POST"])
@@ -105,8 +105,7 @@ def login():
 def user():
     return jsonify({"username": g.user["username"]})
     
-@bp.route("/logout", methods=["POST"])
-@jwt_required()
+@bp.route("/logout", methods=["GET"])
 def logout():
     session.clear()
     return unset_jwt()
@@ -139,6 +138,9 @@ def load_logged_in_user():
 @bp.after_request
 def refresh_expiring_jwts(response):
     try:
+        data = response.get_json()
+        if "no_jwt" in data and data["no_jwt"]:
+            return response
         exp_timestamp = get_jwt()["exp"]
         now = datetime.now(timezone.utc)
         target_timestamp = datetime.timestamp(now + timedelta(minutes=30))

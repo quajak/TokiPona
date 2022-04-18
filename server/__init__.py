@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 
 from flask import Flask, jsonify
@@ -26,7 +27,8 @@ def create_app(test_config=None):
         JWT_TOKEN_LOCATION = ["cookies"],
         JWT_COOKIE_CSRF_PROTECT = True,
         JWT_CSRF_CHECK_FORM = True,
-        JWT_ACCESS_CSRF_HEADER_NAME = "X-CSRF-TOKEN"
+        JWT_ACCESS_CSRF_HEADER_NAME = "X-CSRF-TOKEN",
+        JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
     )
     
     if test_config is None:
@@ -48,7 +50,7 @@ def create_app(test_config=None):
     from . import practise
     app.register_blueprint(practise.bp)
     
-    CORS(app, resources={r'/*': {'origins': '*'}})
+    CORS(app, resources={r'/*': {'origins': 'localhost'}})
     
     jwt = JWTManager(app)
     

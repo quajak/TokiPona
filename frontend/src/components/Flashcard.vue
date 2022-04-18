@@ -66,7 +66,7 @@ async function selectAnswer(chosen: string){
 </script>
 
 <template>
-    <div v-if="question != null">
+    <div v-if="question != null" style="margin-top:10%">
         <p>Nimi: {{ question.toki }}</p>
         <div class="buttons level container" style="width:25%; margin-top: 20px">
             <button class="button" v-for="option in options" @click="() => selectAnswer(option)">
