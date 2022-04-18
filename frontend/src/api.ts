@@ -1,10 +1,11 @@
 import axios from "axios";
-
 axios.defaults.xsrfCookieName = "csrf_access_token"
 axios.defaults.xsrfHeaderName = "X-CSRF-TOKEN"
 
+export const basePath = localStorage.getItem("basePath") || "https://kama-sona.dilab.co"
+
 const authService = axios.create({
-    baseURL: "/api/auth",
+    baseURL: basePath + "/api/auth",
     withCredentials: true,
     xsrfCookieName: "csrf_access_token"
 });

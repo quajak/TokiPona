@@ -2,6 +2,7 @@
 import axios from 'axios'
 import { ref, Ref } from 'vue'
 import { useProgrammatic } from '@oruga-ui/oruga-next'
+import { basePath } from '../api';
 
 const { oruga } = useProgrammatic()
 
@@ -26,7 +27,7 @@ function shuffleArray<T>(array: Array<T>) {
 }
 
 async function getNextQuestion(){
-    question.value = (await axios.get("/api/vocab", {withCredentials: true})).data as Question
+    question.value = (await axios.get(basePath + "/api/vocab", {withCredentials: true})).data as Question
     if(question.value != null){
         options.value = question.value.other_options
         options.value.push(question.value.correct_english)
@@ -60,7 +61,7 @@ async function selectAnswer(chosen: string){
         indefinite: !correct,
         closable: true
     })
-    await axios.post("/api/practise", {"vocab_id": question.value.vocab_id, "correct": correct}, {withCredentials: true})
+    await axios.post(basePath + "/api/practise", {"vocab_id": question.value.vocab_id, "correct": correct}, {withCredentials: true})
     await getNextQuestion()
 }
 </script>
