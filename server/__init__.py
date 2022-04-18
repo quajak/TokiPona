@@ -56,7 +56,7 @@ def create_app(test_config=None):
     from . import practise
     app.register_blueprint(practise.bp)
     
-    CORS(app, resources={r'/*': {'origins': 'localhost'}})
+    CORS(app, resources={r'/*': {'origins': 'localhost', 'https://kama-sona.dilab.co'}})
     
     jwt = JWTManager(app)
     
