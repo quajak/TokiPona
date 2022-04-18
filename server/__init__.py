@@ -9,17 +9,19 @@ from flask_jwt_extended import JWTManager, unset_access_cookies
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     
-    with open("./secrets/flask.txt") as file:
-        secret_key = file.readline().strip()
+    if not (secret_key := os.getenv("SECRET_KEY")):
+        with open("./secrets/flask.txt") as file:
+            secret_key = file.readline().strip()
 
-    with open("./secrets/database_password.txt") as file:
-        database_password = file.readline().strip()
+    if not (database_password := os.getenv("DATABASE_PASSWORD")):
+        with open("./secrets/database_password.txt") as file:
+            database_password = file.readline().strip()
         
-    with open("./secrets/jwt_secret_key.txt") as file:
-        jtw_secret_key = file.readline().strip()
+    if not (jtw_secret_key := os.getenv("JWT_SECRET_KEY")):
+        with open("./secrets/jwt_secret_key.txt") as file:
+            jtw_secret_key = file.readline().strip()
 
-    db_host = os.getenv("DB_HOST")
-    if db_host is None:
+    if not (db_host := os.getenv("DB_HOST")):
         db_host = "127.0.0.1"
 
     app.config.from_mapping(
