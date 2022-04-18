@@ -1,3 +1,3 @@
 # Kama Sona Pona
 
-A vue website with a flask backend to learn and practise Toki Pona.
+A website to practise Toki Pona vocabulary written using vue 3 and flask.
