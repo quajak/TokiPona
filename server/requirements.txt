@@ -4,3 +4,4 @@ flask-jwt-extended
 flask_wtf
 python-dotenv
 mysql-connector-python
+waitress

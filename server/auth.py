@@ -139,7 +139,7 @@ def load_logged_in_user():
 def refresh_expiring_jwts(response):
     try:
         data = response.get_json()
-        if "no_jwt" in data and data["no_jwt"]:
+        if data is not None and "no_jwt" in data and data["no_jwt"]:
             return response
         exp_timestamp = get_jwt()["exp"]
         now = datetime.now(timezone.utc)

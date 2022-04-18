@@ -8,4 +8,4 @@ RUN pip3 install -r requirements.txt
 
 COPY . ./server
 
-CMD ["flask run"]
+CMD waitress-serve --call "server:create_app"

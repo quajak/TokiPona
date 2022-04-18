@@ -12,6 +12,9 @@ services:
     environment:
       - FLASK_APP=server
       - FLASK_ENV=development
+      - DB_HOST=db
+    ports:
+      - 5000:8080
 
   db:
     image: mariadb

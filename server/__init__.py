@@ -18,10 +18,14 @@ def create_app(test_config=None):
     with open("./secrets/jwt_secret_key.txt") as file:
         jtw_secret_key = file.readline().strip()
 
+    db_host = os.getenv("DB_HOST")
+    if db_host is None:
+        db_host = "127.0.0.1"
+
     app.config.from_mapping(
         SECRET_KEY = secret_key,
         DATABASE_PORT = "3306",
-        DATABASE_HOST = "127.0.0.1",
+        DATABASE_HOST = db_host,
         DATABASE_PASSWORD = database_password,
         JWT_SECRET_KEY = jtw_secret_key,
         JWT_TOKEN_LOCATION = ["cookies"],
@@ -59,4 +63,9 @@ def create_app(test_config=None):
         res = jsonify({"success": False, "error": "The token has expired"})
         unset_access_cookies(res)
         return res, 401
+    
+    @app.route("/hello")
+    def hello():
+        return jsonify({"hello": "world"})
+    
     return app
