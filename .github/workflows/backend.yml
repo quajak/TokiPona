@@ -32,7 +32,8 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          tags: quajak/kama-sona-server:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
       - name: Webhook
         uses: joelwmale/webhook-action@fd99bb3b8272237103e349e9bb4d9b0ead9a217c
