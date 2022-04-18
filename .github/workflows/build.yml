@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout
+        uses: actions/checkout@latest
 
       - name: Setup node version
-        uses: actions/setup-node
+        uses: actions/setup-node@latest
         with:
           node-version: "16"
 
@@ -27,7 +27,7 @@ jobs:
 
       - name: Deploy to github pages 🚀
         if: ${{ github.ref == 'refs/heads/master' }}
-        uses: JamesIves/github-pages-deploy-action
+        uses: JamesIves/github-pages-deploy-action@latest
         with:
           branch: gh-pages
           folder: frontend/dist
