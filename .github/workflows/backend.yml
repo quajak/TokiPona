@@ -2,7 +2,7 @@
 name: CD for kama sona server
 on:
   push:
-    [master]
+    branches: [master]
 
 jobs:
   build:
