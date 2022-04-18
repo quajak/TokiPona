@@ -7,11 +7,17 @@ import { useRouter} from "vue-router"
 import {computed, ref} from "vue";
 
 const store = useStore()
+const router = useRouter()
 
 const loggedIn = computed(() => store.state.isLoggedIn)
 
 const expanded = ref(false);
 
+
+function logout(){
+  store.dispatch(ActionTypes.logoutUser)
+  router.push("/")
+}
 </script>
 
 <template>
@@ -37,13 +43,13 @@ const expanded = ref(false);
         </div>
         <div class="navbar-end">
           <div class="navbar-item" v-if="!loggedIn">
-            <router-link to="/login" class="nav-link">Login</router-link>
-          </div>
-          <div class="navbar-item" v-if="!loggedIn">
             <router-link to="/register" class="nav-link">Register</router-link>
           </div>
+          <div class="navbar-item" v-if="!loggedIn">
+            <router-link to="/login" class="nav-link">Login</router-link>
+          </div>
           <div class="navbar-item" v-if="loggedIn">
-            <router-link to="/logout" class="nav-link">Logout</router-link>
+            <button class="button is-small is-link is-outlined" @click="logout">Logout</button>
           </div>
         </div>
       </div>

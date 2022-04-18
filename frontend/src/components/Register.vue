@@ -24,14 +24,14 @@ async function register() {
 </script>
 
 <template>
-    <h1>Register</h1>
+    <h1 class="title is-4">Register</h1>
     <div v-if="error != ''">
         <p>Error: {{ error }} </p>
     </div>
     <form @submit="register">
-    <input v-model="username" placeholder="Username">
-    <input v-model="password" type="password">
-    <input type="submit" value="Submit">
+    <input class="input" v-model="username" placeholder="Username" style="width:15%; margin-right: 3%;">
+    <input class="input" v-model="password" type="password" style="width:15%; margin-right: 3%;">
+    <input class="button" type="submit" value="Submit">
     </form>
 </template>
 

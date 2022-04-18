@@ -26,14 +26,14 @@ async function login() {
 </script>
 
 <template>
-    <h1>Login</h1>
+    <h1 class="title is-4">Login</h1>
     <div v-if="error != ''">
         <p>Error: {{ error }} </p>
     </div>
     <form @submit="login">
-    <input v-model="username" placeholder="Username">
-    <input v-model="password" type="password">
-    <input type="submit" value="Submit">
+      <input class="input is-small" v-model="username" placeholder="Username" style="width:15%; margin-right: 3%;">
+      <input class="input is-small" v-model="password" type="password" style="width:15%; margin-right: 3%;">
+      <input class="button is-small" type="submit" value="Submit">
     </form>
 </template>
 

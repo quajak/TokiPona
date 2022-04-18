@@ -29,7 +29,6 @@ const routes = [
   { path: '/login', component: Login, props: {redirectReason: ""} },
   { path: '/relogin', component: Login, props: true },
   { path: '/register', component: Register },
-  { path: '/logout', component: Logout },
   { path: "/flashcard", component: Flashcard}
 ]
 
@@ -61,8 +60,7 @@ axios.interceptors.response.use(function (response) {
     // Do something with response data
     return response;
   }, function (error) {
-    console.log(error)
-    if(error.code == 401){
+    if(error.response.status == 401){
       router.push({path: "/relogin", params: {redirectReason: "Due to inactivity you have to login again"}})
       store.commit(MutationTypes.logoutUserState)
     }
