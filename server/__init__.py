@@ -34,7 +34,9 @@ def create_app(test_config=None):
         JWT_COOKIE_CSRF_PROTECT = True,
         JWT_CSRF_CHECK_FORM = True,
         JWT_ACCESS_CSRF_HEADER_NAME = "X-CSRF-TOKEN",
-        JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
+        JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30),
+        JWT_COOKIE_SAMESITE = "None",
+        JWT_COOKIE_SECURE = True
     )
     
     if test_config is None:
@@ -56,8 +58,9 @@ def create_app(test_config=None):
     from . import practise
     app.register_blueprint(practise.bp)
     
-    CORS(app, resources={r'/*': {'origins': ['localhost', 'https://kama-sona.dilab.co']}})
-    
+    origins = "*"
+    CORS(app, origins = origins, supports_credentials = True)
+
     jwt = JWTManager(app)
     
     @jwt.expired_token_loader
