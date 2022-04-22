@@ -9,7 +9,7 @@ from mysql.connector import Error
 
 from server.db import get_db
 
-bp = Blueprint("practise", __name__)
+bp = Blueprint("practise", __name__, url_prefix="/api")
 
 @bp.route("/vocab")
 @jwt_required()
@@ -93,6 +93,69 @@ def practise():
                         tries = %s
                         WHERE id = %s
                        """, (vocab_progress["correct"] + 1 if correct else 0, vocab_progress["tries"] + 1, vocab_progress["id"]), )
+        if correct:
+            cursor.execute("""
+                           SELECT *
+                           FROM streaks
+                           WHERE user = %s AND active = 1
+                           """, (user_id, ))
+            streaks = cursor.fetchone()
+            if streaks is None:
+                cursor.execute("""
+                               INSERT INTO streaks
+                               (user, correct)
+                               VALUES (%s, 1)
+                               """, (user_id, ))
+            else:
+                cursor.execute("""
+                               UPDATE streaks
+                               SET correct = correct + 1
+                               WHERE user=%s AND active = 1
+                               """, ((user_id, )))
+        else:
+            cursor.execute("""
+                           UPDATE streaks
+                           SET active = 0
+                           WHERE user = %s
+                           """, ((user_id, )))
         db.commit()
         
-    return jsonify({"success": True})
+    return jsonify({"success": True, "streak": get_streak(user_id)})
+
+def get_streak(user_id: int):
+    db = get_db()
+    with db.cursor(dictionary=True, buffered=True) as cursor:    
+        cursor.execute("""
+                    SELECT correct
+                    FROM streaks
+                    WHERE user = %s AND active = 1
+                    """, ((user_id, )))
+        count = cursor.fetchone()
+    return count["correct"] if count is not None else 0
+
+@bp.route("/profile", methods=["GET"])
+@jwt_required()
+def profile():
+    user_id = get_jwt_identity()
+    db = get_db()
+    
+    with db.cursor(dictionary=True, buffered=True) as cursor:
+        streak = get_streak(user_id)
+        cursor.execute("""
+                       SELECT correct
+                       FROM streaks
+                       WHERE user = %s
+                       ORDER BY correct DESC
+                       LIMIT 1;
+                       """, (user_id, ))
+        if best := cursor.fetchone():
+            best = best["correct"]
+        else:
+            best = 0
+        cursor.execute("""
+                       SELECT SUM(correct)
+                       FROM vocab_progress
+                       WHERE user = %s
+                       """, (user_id, ))
+        progress = int(cursor.fetchone()["SUM(correct)"])
+    return jsonify({"current": streak, "best": best, "progress": progress})

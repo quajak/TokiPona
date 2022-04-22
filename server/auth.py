@@ -13,7 +13,7 @@ from mysql.connector import Error
 
 from server.db import get_db
 
-bp = Blueprint("auth", __name__, url_prefix="/auth")
+bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
 def assign_access_refresh_tokens(user_id: int):
     access_token = create_access_token(identity=str(user_id))

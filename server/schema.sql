@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS word;
 DROP TABLE IF EXISTS vocab;
 DROP TABLE IF EXISTS vocab_progress;
+DROP TABLE IF EXISTS streaks;
 COMMIT;
 
 CREATE TABLE user (
@@ -35,6 +36,14 @@ CREATE TABLE vocab_progress (
     vocab INTEGER NOT NULL,
     correct INTEGER DEFAULT 0,
     tries INTEGER DEFAULT 0,
+    user INTEGER NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE streaks (
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    active BOOLEAN DEFAULT 1,
+    correct INTEGER DEFAULT 0,
     user INTEGER NOT NULL,
     PRIMARY KEY (id)
 );

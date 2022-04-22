@@ -44,15 +44,16 @@ async function selectAnswer(chosen: string){
     let message = "Correct!";
     if(!correct){
         message = question.value.toki + " = " + question.value.correct_english + " (You chose: " + chosen + ")"
-        correctCount = 0
-    }
-    else{
-        correctCount++
-        message += " x" + correctCount
     }
     if(notification != null){
         notification.close();
     }
+    const data = await axios.post(basePath + "/api/practise", {"vocab_id": question.value.vocab_id, "correct": correct}, {withCredentials: true}) as Record<string, any>
+    
+    if(data.data["streak"] != 0){
+        message += " x" + data.data["streak"]
+    }
+
     notification = oruga.notification.open({
         message: message,
         variant: correct ? "success" : "danger",
@@ -61,7 +62,6 @@ async function selectAnswer(chosen: string){
         indefinite: !correct,
         closable: true
     })
-    await axios.post(basePath + "/api/practise", {"vocab_id": question.value.vocab_id, "correct": correct}, {withCredentials: true})
     await getNextQuestion()
 }
 </script>
