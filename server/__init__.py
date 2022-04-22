@@ -31,10 +31,10 @@ def create_app(test_config=None):
         DATABASE_PASSWORD = database_password,
         JWT_SECRET_KEY = jtw_secret_key,
         JWT_TOKEN_LOCATION = ["cookies"],
-        JWT_COOKIE_CSRF_PROTECT = True,
+        JWT_COOKIE_CSRF_PROTECT = False,
         JWT_CSRF_CHECK_FORM = True,
         JWT_ACCESS_CSRF_HEADER_NAME = "X-CSRF-TOKEN",
-        JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30),
+        JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=60),
         JWT_COOKIE_SAMESITE = "None",
         JWT_COOKIE_SECURE = True
     )
