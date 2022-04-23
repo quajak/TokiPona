@@ -1,5 +1,6 @@
 import functools
 import json
+import math
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for, jsonify
@@ -15,18 +16,36 @@ bp = Blueprint("practise", __name__, url_prefix="/api")
 @jwt_required()
 def vocab():
     user_id = get_jwt_identity()
+    data = request.args
+    mode = data["mode"]
+    options = int(data["options"])
     
     with get_db().cursor(dictionary=True, buffered=True) as cursor:
-        cursor.execute(
-            """
-                SELECT vocab 
-                FROM vocab_progress
-                WHERE user = %s
-                ORDER BY
-                correct ASC,
-                RAND() ASC
-                LIMIT 1;
-            """, (user_id, ))
+        if mode == "All":
+            cursor.execute(
+                """
+                    SELECT vocab 
+                    FROM vocab_progress
+                    WHERE user = %s
+                    ORDER BY
+                    correct ASC,
+                    RAND() ASC
+                    LIMIT 1;
+                """, (user_id, ))
+        elif mode == "Mistakes":
+            cursor.execute(
+                """
+                    SELECT vocab 
+                    FROM vocab_progress
+                    WHERE user = %s
+                    ORDER BY
+                    streak ASC,
+                    correct ASC,
+                    RAND() ASC
+                    LIMIT 1;
+                """, (user_id, ))
+        else:
+            raise Exception("Not a valid mode: " + mode)
         vocab_id = cursor.fetchone()["vocab"]
         cursor.execute(
             """
@@ -62,8 +81,8 @@ def vocab():
                                     on v.toki = j.id
                                     WHERE j.word != %s
             ORDER BY RAND()
-            LIMIT 3;
-            """, (toki["word"],)
+            LIMIT %s;
+            """, (toki["word"], options - 1)
         )
         wrong_english = [option["word"] for option in cursor.fetchall()]
     
@@ -90,9 +109,10 @@ def practise():
                        UPDATE vocab_progress
                        SET
                         correct = %s,
-                        tries = %s
+                        tries = tries + 1,
+                        streak = %s
                         WHERE id = %s
-                       """, (vocab_progress["correct"] + 1 if correct else 0, vocab_progress["tries"] + 1, vocab_progress["id"]), )
+                       """, (vocab_progress["correct"] + 1 if correct else 0, vocab_progress["streak"] + 1 if correct else min(-1, vocab_progress["streak"] - 1), vocab_progress["id"]), )
         if correct:
             cursor.execute("""
                            SELECT *

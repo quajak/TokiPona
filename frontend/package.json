@@ -20,8 +20,8 @@
     "vuex": "^4.0.2"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "6.1.1",
     "@oruga-ui/oruga-next": "^0.5.5",
-    "@oruga-ui/theme-bulma": "^0.2.5",
-    "@fortawesome/fontawesome-free": "6.1.1"
+    "@oruga-ui/theme-bulma": "^0.2.5"
   }
 }

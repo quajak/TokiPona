@@ -37,6 +37,7 @@ CREATE TABLE vocab_progress (
     correct INTEGER DEFAULT 0,
     tries INTEGER DEFAULT 0,
     user INTEGER NOT NULL,
+    streak INTEGER DEFAULT 0,
     PRIMARY KEY (id)
 );
 

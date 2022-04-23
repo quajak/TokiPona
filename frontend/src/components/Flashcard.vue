@@ -13,10 +13,12 @@ type Question = {
     vocab_id: number
 }
 
+const settingMenu = ref(false);
+const vocabMode = ref("All");
+const vocabOptions = ref(4);
 const question = ref(null) as Ref<Question|null>
 const options = ref([] as Array<string>)
 let notification = null as any
-let correctCount = 0
 
 // https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
 function shuffleArray<T>(array: Array<T>) {
@@ -27,12 +29,12 @@ function shuffleArray<T>(array: Array<T>) {
 }
 
 async function getNextQuestion(){
-    question.value = (await axios.get(basePath + "/api/vocab", {withCredentials: true})).data as Question
+    question.value = (await axios.get(basePath + "/api/vocab", {params: {"mode": vocabMode.value, "options": vocabOptions.value}, withCredentials: true})).data as Question
     if(question.value != null){
         options.value = question.value.other_options
         options.value.push(question.value.correct_english)
         shuffleArray(options.value)
-    }
+    }   
 
 }
 
@@ -67,6 +69,27 @@ async function selectAnswer(chosen: string){
 </script>
 
 <template>
+    <o-modal v-model:active="settingMenu">
+        <div style="z-index: 50; background-color: white; padding: 30px; border-radius: 15%;">
+            <h4>Settings</h4>
+            <o-field label="Mode">
+                <o-select placeholder="Select a mode" v-model="vocabMode">
+                    <option value="All">All words</option>
+                    <option value="Mistakes">Revise mistakes</option>
+                </o-select>
+            </o-field>
+            <o-field label="Options">
+                <o-select placeholder="Select number of options" v-model="vocabOptions">
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                </o-select>
+            </o-field>
+        </div>
+    </o-modal>
+    
+    <button class="button" @click="settingMenu = true" style="position: absolute; bottom: 3%; left: 3%;"><i class="fa-solid fa-gear"></i></button>
     <div v-if="question != null" style="margin-top:10%">
         <p>Nimi: {{ question.toki }}</p>
         <div class="buttons level container" style="width:35%; margin-top: 20px">
@@ -80,5 +103,8 @@ async function selectAnswer(chosen: string){
     </div>
 </template>
 
-<style scoped lang="scss">
+<style>
+.modal-background{
+    z-index: -1;
+}
 </style>
