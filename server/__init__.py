@@ -58,6 +58,9 @@ def create_app(test_config=None):
     from . import practise
     app.register_blueprint(practise.bp)
     
+    from . import dictionary
+    app.register_blueprint(dictionary.bp)
+    
     origins = "*"
     CORS(app, origins = origins, supports_credentials = True)
 

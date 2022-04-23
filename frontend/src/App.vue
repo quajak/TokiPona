@@ -37,6 +37,9 @@ function logout(){
           <div class="navbar-item">
             <router-link to="/">Home</router-link>
           </div>
+          <div class="navbar-item">
+            <router-link to="/dictionary">Dictionary</router-link>
+          </div>
           <div class="navbar-item" v-if="loggedIn">
             <router-link to="/flashcard">Practise</router-link>
           </div>

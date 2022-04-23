@@ -1,6 +1,6 @@
-import { AxiosRequestHeaders } from "axios";
+import axios, { AxiosRequestHeaders } from "axios";
 import { createStore, ActionContext, Store } from "vuex"
-import { authService } from "../api";
+import { authService, basePath } from "../api";
 
 type UserLogin = {
     username: string,
@@ -13,14 +13,21 @@ type User = {
 
 const state = {
     user: {username: ""} as User,
-    isLoggedIn: false
+    isLoggedIn: false,
+    definitions: {} as Record<string, Array<{type: string, english: Array<string>}>>
 };
 
 type State = typeof state
 
 const getters = {
     isLoggedIn: (state: State) => state.isLoggedIn,
-    user: (state: State) => state.user
+    user: (state: State) => state.user,
+    defintionFor: (state: State) => (word: string) => {
+        if (!state.definitions[word]) {
+            store.dispatch(ActionTypes.getWordDefinition, word)
+        }
+        return state.definitions[word]
+    }
 };
 
 const actions = {
@@ -30,7 +37,7 @@ const actions = {
 
     async loginUser(context: Context, login: UserLogin){
         const data = await authService.post("/login", {"username": login.username, "password": login.password}, { withCredentials: true })
-        context.dispatch(ActionTypes.fetchUser);
+        context.dispatch(ActionTypes.fetchUser)
         return data    
     },
 
@@ -42,6 +49,11 @@ const actions = {
     async logoutUser(context: Context) {
         await authService.get("/logout", { withCredentials: true })
         context.commit(MutationTypes.logoutUserState, undefined)
+    },
+
+    async getWordDefinition(context: Context, word: string) {
+        const response = await axios.get(basePath + "/api/dictionary/define", {params: {"word": word}, withCredentials: true})
+        context.state.definitions[word] = response.data["definitions"]
     }
 };
 
@@ -75,9 +87,11 @@ type MutationsProp = {
 
 export type Context = Omit<ActionContext<State, State>, "commit"> & MutationsProp
 
-export default createStore({
+const store = createStore({
     state,
     getters,
     actions,
     mutations
 });
+
+export default store

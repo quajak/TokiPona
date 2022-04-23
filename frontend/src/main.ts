@@ -17,6 +17,7 @@ import '@oruga-ui/oruga-next/dist/oruga.css'
 import { bulmaConfig } from "@oruga-ui/theme-bulma"
 import Flashcard from "./components/Flashcard.vue"
 import Profile from "./components/Profile.vue"
+import Dictionary from "./components/Dictionary.vue"
 
 axios.defaults.xsrfCookieName = "csrf_access_token"
 axios.defaults.xsrfHeaderName = "X-CSRF-TOKEN"
@@ -30,7 +31,8 @@ const routes = [
   { path: '/relogin', component: Login, props: true },
   { path: '/register', component: Register },
   { path: "/flashcard", component: Flashcard},
-  { path: "/profile", component: Profile}
+  { path: "/profile", component: Profile},
+  { path: "/dictionary", component: Dictionary},
 ]
 
 const router = createRouter({
