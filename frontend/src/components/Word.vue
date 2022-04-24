@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, ComputedRef, watch, toRefs, update } from 'vue'
+import { ref, onMounted, computed, ComputedRef, watch, toRefs } from 'vue'
 import { mapActions, mapGetters, useStore } from 'vuex'
 import { ActionTypes } from '../store/store'
 import { useRouter} from "vue-router"
