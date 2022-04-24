@@ -45,7 +45,11 @@ async function selectAnswer(chosen: string){
     let correct = chosen == question.value.correct_english
     let message = "Correct!";
     if(!correct){
-        message = question.value.toki + " = " + question.value.correct_english + " (You chose: " + chosen + ")"
+        message = `<p>${question.value.toki} = ${question.value.correct_english}</p> 
+        <div>
+            <a href="#/definition/${question.value.toki}" class="nav-link">See ${question.value.toki} definition</a> 
+        </div>
+        <p> You had chosen: ${chosen}</p>`
     }
     if(notification != null){
         notification.close();

@@ -18,21 +18,20 @@ import { bulmaConfig } from "@oruga-ui/theme-bulma"
 import Flashcard from "./components/Flashcard.vue"
 import Profile from "./components/Profile.vue"
 import Dictionary from "./components/Dictionary.vue"
+import Definition from "./components/Definition.vue"
 
 axios.defaults.xsrfCookieName = "csrf_access_token"
 axios.defaults.xsrfHeaderName = "X-CSRF-TOKEN"
 
-// 2. Define some routes
-// Each route should map to a component.
-// We'll talk about nested routes later.
 const routes = [
-  {path: "/", component: HelloWorld},
   { path: '/login', component: Login, props: {redirectReason: ""} },
   { path: '/relogin', component: Login, props: true },
   { path: '/register', component: Register },
   { path: "/flashcard", component: Flashcard},
   { path: "/profile", component: Profile},
   { path: "/dictionary", component: Dictionary},
+  { path: "/definition/:word", component: Definition},
+  {path: "/", component: HelloWorld},
 ]
 
 const router = createRouter({
