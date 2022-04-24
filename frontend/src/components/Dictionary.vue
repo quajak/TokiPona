@@ -18,7 +18,7 @@ async function getWords(search: string) {
     number.value = 10
 }
 
-function onlyUnique(value: any, index: int, self: Array<any>) {
+function onlyUnique(value: any, index: number, self: Array<any>) {
   return self.indexOf(value) === index;
 }
 
