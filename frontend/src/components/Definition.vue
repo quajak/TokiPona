@@ -10,7 +10,7 @@ import Word from "./Word.vue"
 </script>
 
 <template>
-    <Word :word="$route.params.word"></Word>
+    <Word :word="($route.params.word as string)"></Word>
 </template>
 
 <style scoped lang="scss">
