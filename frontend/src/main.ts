@@ -19,6 +19,7 @@ import Flashcard from "./components/Flashcard.vue"
 import Profile from "./components/Profile.vue"
 import Dictionary from "./components/Dictionary.vue"
 import Definition from "./components/Definition.vue"
+import SelectAll from "./components/SelectAll.vue"
 
 axios.defaults.xsrfCookieName = "csrf_access_token"
 axios.defaults.xsrfHeaderName = "X-CSRF-TOKEN"
@@ -31,6 +32,7 @@ const routes = [
   { path: "/profile", component: Profile},
   { path: "/dictionary", component: Dictionary},
   { path: "/definition/:word", component: Definition},
+  { path: "/selectall", component: SelectAll},
   {path: "/", component: HelloWorld},
 ]
 

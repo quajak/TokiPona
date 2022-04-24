@@ -7,6 +7,7 @@ from flask import (
 )
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from mysql.connector import Error
+from random import randint
 
 from server.db import get_db
 
@@ -179,3 +180,61 @@ def profile():
                        """, (user_id, ))
         progress = int(cursor.fetchone()["SUM(correct)"])
     return jsonify({"current": streak, "best": best, "progress": progress})
+
+
+@bp.route("/selectall", methods=["GET"])
+@jwt_required()
+def selectall():
+    user_id = get_jwt_identity()
+    
+    db = get_db()
+    
+    num_correct= randint(3,7)
+    num_wrong  = 15 - num_correct
+    
+    with db.cursor(dictionary=True, buffered=True) as cursor:
+        cursor.execute(
+            """
+                SELECT word 
+                FROM word
+                WHERE toki = 1
+                ORDER BY
+                RAND() ASC
+                LIMIT 1;
+            """)
+
+        vocab_word = cursor.fetchone()["word"]
+        cursor.execute(
+            """
+            SELECT e.word 
+            FROM word e
+                INNER JOIN vocab v
+                ON e.id = v.english
+                    INNER JOIN word w
+                    ON w.id = v.toki
+                    WHERE w.word = %s AND w.toki = 1
+            ORDER BY
+            RAND() ASC
+            LIMIT %s;
+            """, (vocab_word, num_correct)
+        )
+        correct_english = [w["word"] for w in cursor.fetchall()]
+        num_wrong  = 15 - num_correct
+        
+        cursor.execute(
+            """
+            SELECT e.word 
+            FROM word e
+                INNER JOIN vocab v
+                ON e.id = v.english
+                    INNER JOIN word w
+                    ON w.id = v.toki
+                    WHERE w.word != %s AND w.toki = 1
+            ORDER BY
+            RAND() ASC
+            LIMIT %s;
+            """, (vocab_word, num_wrong)
+        )
+        wrong_english = [option["word"] for option in cursor.fetchall()]
+        
+    return jsonify({"success": True, "correct_english": correct_english, "other_options": wrong_english, "toki": vocab_word})
