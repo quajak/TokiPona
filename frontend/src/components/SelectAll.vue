@@ -6,9 +6,14 @@ import { basePath } from '../api';
 
 const { oruga } = useProgrammatic()
 
+type Vocab = {
+    word: string,
+    id: number
+}
+
 type Question = {
-    correct_english: Array<string>,
-    other_options: Array<string>,
+    correct_english: Array<Vocab>,
+    other_options: Array<Vocab>,
     toki: string
 }
 
@@ -16,7 +21,8 @@ type Option = {
     word: string,
     correct: boolean,
     selected: boolean,
-    hidden: boolean
+    hidden: boolean,
+    vocab_id: number
 }
 
 const question = ref(null) as Ref<Question|null>
@@ -34,8 +40,8 @@ function shuffleArray<T>(array: Array<T>) {
 async function getNextQuestion(){
     question.value = (await axios.get(basePath + "/api/selectall", {withCredentials: true})).data as Question
     if(question.value != null){
-        options.value = question.value.other_options.map(o => {return {word: o, correct: false, selected: false, hidden: true} as Option})
-                            .concat(question.value.correct_english.map(o => {return {word: o, correct: true, selected: false, hidden: true} as Option}))
+        options.value = question.value.other_options.map(o => {return {word: o.word, vocab_id: o.id, correct: false, selected: false, hidden: true} as Option})
+                            .concat(question.value.correct_english.map(o => {return {word: o.word, vocab_id: o.id, correct: true, selected: false, hidden: true} as Option}))
         shuffleArray(options.value)
     }   
 
@@ -44,6 +50,12 @@ async function getNextQuestion(){
 async function showAnswer(){
     options.value.forEach(element => {
         element.hidden = false
+        if(element.correct != element.selected){
+            axios.post(basePath + "/api/practise", {"vocab_id": element.vocab_id, "correct": false}, {withCredentials: true})
+        }
+        else if(element.correct){
+            axios.post(basePath + "/api/practise", {"vocab_id": element.vocab_id, "correct": true}, {withCredentials: true})
+        }
     });
 }
 
@@ -65,9 +77,11 @@ async function progress(){
         <div v-for="index in 4" :key="index">
             <div class="buttons level container" style="width:35%; margin-top: 20px">
                 <button v-for="option in options.slice((index-1) * 5, index * 5)" 
-                    :class='["button", "is-outlined", (option.selected && option.hidden) ? "is-info" : "",
+                    :class='["button",
+                    (option.correct && !option.hidden ? "" : "is-outlined"), 
+                    (option.selected && option.hidden) ? "is-info" : "",
                     (!option.hidden && option.correct != option.selected) ? "is-danger" : "",
-                    (!option.hidden && option.correct == option.selected) ? "is-primary" : ""]' @click="() => option.selected = !option.selected">
+                    (!option.hidden && option.correct == option.selected) ? "is-primary" : ""]' @click="() => option.selected = option.hidden && !option.selected || !option.hidden && option.selected">
                     {{option.word}}
                 </button>
             </div>

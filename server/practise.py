@@ -206,35 +206,43 @@ def selectall():
         vocab_word = cursor.fetchone()["word"]
         cursor.execute(
             """
-            SELECT e.word 
-            FROM word e
-                INNER JOIN vocab v
-                ON e.id = v.english
-                    INNER JOIN word w
-                    ON w.id = v.toki
-                    WHERE w.word = %s AND w.toki = 1
-            ORDER BY
-            RAND() ASC
+            SELECT *
+                FROM (
+                    SELECT e.word, v.id
+                    FROM word e
+                        INNER JOIN vocab v
+                        ON e.id = v.english
+                            INNER JOIN word w
+                            ON w.id = v.toki
+                            WHERE w.word = %s AND w.toki = 1
+                    ORDER BY RAND() ASC
+                ) diff_words
+            GROUP BY diff_words.word
+            ORDER BY RAND() ASC
             LIMIT %s;
             """, (vocab_word, num_correct)
         )
-        correct_english = [w["word"] for w in cursor.fetchall()]
-        num_wrong  = 15 - num_correct
+        correct_english = cursor.fetchall()
+        num_wrong  = 15 - len(correct_english)
         
         cursor.execute(
             """
-            SELECT e.word 
-            FROM word e
-                INNER JOIN vocab v
-                ON e.id = v.english
-                    INNER JOIN word w
-                    ON w.id = v.toki
-                    WHERE w.word != %s AND w.toki = 1
-            ORDER BY
-            RAND() ASC
+            SELECT *
+                FROM (
+                    SELECT e.word, v.id
+                    FROM word e
+                        INNER JOIN vocab v
+                        ON e.id = v.english
+                            INNER JOIN word w
+                            ON w.id = v.toki
+                            WHERE w.word != %s AND w.toki = 1
+                    ORDER BY RAND() ASC
+                ) diff_words
+            GROUP BY diff_words.word
+            ORDER BY RAND() ASC
             LIMIT %s;
             """, (vocab_word, num_wrong)
         )
-        wrong_english = [option["word"] for option in cursor.fetchall()]
+        wrong_english = cursor.fetchall()
         
     return jsonify({"success": True, "correct_english": correct_english, "other_options": wrong_english, "toki": vocab_word})
