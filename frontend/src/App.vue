@@ -47,6 +47,9 @@ function logout(){
             <router-link to="/selectall">Select All</router-link>
           </div>
           <div class="navbar-item" v-if="loggedIn">
+            <router-link to="/typing">Type Toki</router-link>
+          </div>
+          <div class="navbar-item" v-if="loggedIn">
             <router-link to="/profile">Profile</router-link>
           </div>
         </div>

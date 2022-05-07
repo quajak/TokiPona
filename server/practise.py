@@ -13,6 +13,35 @@ from server.db import get_db
 
 bp = Blueprint("practise", __name__, url_prefix="/api")
 
+@bp.route("/get_vocab_pair")
+@jwt_required()
+def vocab_pair():
+    user_id = get_jwt_identity()
+    data = request.args
+    mode = data["mode"]
+    
+    with get_db().cursor(dictionary=True, buffered=True) as cursor:
+        vocab = get_word_to_test(user_id, mode, cursor)
+        
+        cursor.execute(
+            """
+            SELECT word
+            FROM word
+            WHERE id = %s
+            """, (vocab["toki"],)
+        )
+        toki = cursor.fetchone()["word"]
+        
+        cursor.execute(
+            """
+            SELECT word
+            FROM word
+            WHERE id = %s
+            """, (vocab["english"],)
+        )
+        english = cursor.fetchone()["word"]
+    return {"toki": toki, "english": english, "id": vocab["id"]}
+
 @bp.route("/vocab")
 @jwt_required()
 def vocab():
@@ -22,40 +51,7 @@ def vocab():
     options = int(data["options"])
     
     with get_db().cursor(dictionary=True, buffered=True) as cursor:
-        if mode == "All":
-            cursor.execute(
-                """
-                    SELECT vocab 
-                    FROM vocab_progress
-                    WHERE user = %s
-                    ORDER BY
-                    correct ASC,
-                    RAND() ASC
-                    LIMIT 1;
-                """, (user_id, ))
-        elif mode == "Mistakes":
-            cursor.execute(
-                """
-                    SELECT vocab 
-                    FROM vocab_progress
-                    WHERE user = %s
-                    ORDER BY
-                    streak ASC,
-                    correct ASC,
-                    RAND() ASC
-                    LIMIT 1;
-                """, (user_id, ))
-        else:
-            raise Exception("Not a valid mode: " + mode)
-        vocab_id = cursor.fetchone()["vocab"]
-        cursor.execute(
-            """
-            SELECT * 
-            FROM vocab
-            WHERE id = %s;
-            """, (vocab_id,)
-        )
-        vocab = cursor.fetchone()
+        vocab = get_word_to_test(user_id, mode, cursor)
         cursor.execute(
             """
             SELECT word
@@ -87,7 +83,45 @@ def vocab():
         )
         wrong_english = [option["word"] for option in cursor.fetchall()]
     
-    return {"toki": toki["word"], "correct_english": english["word"], "other_options": wrong_english, "vocab_id": vocab_id}
+    return {"toki": toki["word"], "correct_english": english["word"], "other_options": wrong_english, "vocab_id": vocab["id"]}
+
+def get_word_to_test(user_id, mode, cursor):
+    if mode == "All":
+        cursor.execute(
+                """
+                    SELECT vocab 
+                    FROM vocab_progress
+                    WHERE user = %s
+                    ORDER BY
+                    correct ASC,
+                    RAND() ASC
+                    LIMIT 1;
+                """, (user_id, ))
+    elif mode == "Mistakes":
+        cursor.execute(
+                """
+                    SELECT vocab 
+                    FROM vocab_progress
+                    WHERE user = %s
+                    ORDER BY
+                    streak ASC,
+                    correct ASC,
+                    RAND() ASC
+                    LIMIT 1;
+                """, (user_id, ))
+    else:
+        raise Exception("Not a valid mode: " + mode)
+    vocab_id = cursor.fetchone()["vocab"]
+    
+    cursor.execute(
+    """
+    SELECT * 
+    FROM vocab
+    WHERE id = %s;
+    """, (vocab_id,)
+    )
+    vocab = cursor.fetchone()
+    return vocab
 
 @bp.route("/practise", methods=["POST"])
 @jwt_required()
@@ -97,6 +131,7 @@ def practise():
     data = request.get_json()
     vocab_id = data["vocab_id"]
     correct = data["correct"]
+    type = data["type"]
     db = get_db()
     
     with db.cursor(dictionary=True, buffered=True) as cursor:
@@ -114,43 +149,44 @@ def practise():
                         streak = %s
                         WHERE id = %s
                        """, (vocab_progress["correct"] + 1 if correct else 0, vocab_progress["streak"] + 1 if correct else min(-1, vocab_progress["streak"] - 1), vocab_progress["id"]), )
-        if correct:
-            cursor.execute("""
-                           SELECT *
-                           FROM streaks
-                           WHERE user = %s AND active = 1
-                           """, (user_id, ))
-            streaks = cursor.fetchone()
-            if streaks is None:
+        if type != -1:
+            if correct:
                 cursor.execute("""
-                               INSERT INTO streaks
-                               (user, correct)
-                               VALUES (%s, 1)
-                               """, (user_id, ))
+                            SELECT *
+                            FROM streaks
+                            WHERE user = %s AND active = 1 AND type = %s
+                            """, (user_id, type))
+                streaks = cursor.fetchone()
+                if streaks is None:
+                    cursor.execute("""
+                                INSERT INTO streaks
+                                (user, correct, type)
+                                VALUES (%s, 1, %s)
+                                """, (user_id, type))
+                else:
+                    cursor.execute("""
+                                UPDATE streaks
+                                SET correct = correct + 1
+                                WHERE user=%s AND active = 1 AND type = %s
+                                """, ((user_id, type)))
             else:
                 cursor.execute("""
-                               UPDATE streaks
-                               SET correct = correct + 1
-                               WHERE user=%s AND active = 1
-                               """, ((user_id, )))
-        else:
-            cursor.execute("""
-                           UPDATE streaks
-                           SET active = 0
-                           WHERE user = %s
-                           """, ((user_id, )))
+                            UPDATE streaks
+                            SET active = 0
+                            WHERE user = %s AND type = %s
+                            """, ((user_id, type)))
         db.commit()
         
-    return jsonify({"success": True, "streak": get_streak(user_id)})
+    return jsonify({"success": True, "streak": get_streak(user_id, type)})
 
-def get_streak(user_id: int):
+def get_streak(user_id: int, type: int):
     db = get_db()
     with db.cursor(dictionary=True, buffered=True) as cursor:    
         cursor.execute("""
                     SELECT correct
                     FROM streaks
-                    WHERE user = %s AND active = 1
-                    """, ((user_id, )))
+                    WHERE user = %s AND active = 1 AND type = %s
+                    """, ((user_id, type)))
         count = cursor.fetchone()
     return count["correct"] if count is not None else 0
 
@@ -159,27 +195,34 @@ def get_streak(user_id: int):
 def profile():
     user_id = get_jwt_identity()
     db = get_db()
+    scores = {}
     
     with db.cursor(dictionary=True, buffered=True) as cursor:
-        streak = get_streak(user_id)
-        cursor.execute("""
-                       SELECT correct
-                       FROM streaks
-                       WHERE user = %s
-                       ORDER BY correct DESC
-                       LIMIT 1;
-                       """, (user_id, ))
-        if best := cursor.fetchone():
-            best = best["correct"]
-        else:
-            best = 0
+        scores["0"] = get_streak_info(user_id, cursor, 0)
+        scores["1"] = get_streak_info(user_id, cursor, 1)
         cursor.execute("""
                        SELECT SUM(correct)
                        FROM vocab_progress
                        WHERE user = %s
                        """, (user_id, ))
         progress = int(cursor.fetchone()["SUM(correct)"])
-    return jsonify({"current": streak, "best": best, "progress": progress})
+    return jsonify({"scores": scores, "progress": progress})
+
+def get_streak_info(user_id, cursor, type):
+    streak = get_streak(user_id, type)
+    cursor.execute("""
+                       SELECT correct
+                       FROM streaks
+                       WHERE user = %s AND type = %s
+                       ORDER BY correct DESC
+                       LIMIT 1;
+                       """, (user_id, type))
+    if best := cursor.fetchone():
+        best = best["correct"]
+    else:
+        best = 0
+    info = {"best": best, "current": streak}
+    return info
 
 
 @bp.route("/selectall", methods=["GET"])

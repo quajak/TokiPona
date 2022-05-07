@@ -46,6 +46,7 @@ CREATE TABLE streaks (
     active BOOLEAN DEFAULT 1,
     correct INTEGER DEFAULT 0,
     user INTEGER NOT NULL,
+    type INTEGER NOT NULL,
     PRIMARY KEY (id)
 );
 COMMIT;

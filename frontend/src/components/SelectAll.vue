@@ -51,10 +51,10 @@ async function showAnswer(){
     options.value.forEach(element => {
         element.hidden = false
         if(element.correct != element.selected){
-            axios.post(basePath + "/api/practise", {"vocab_id": element.vocab_id, "correct": false}, {withCredentials: true})
+            axios.post(basePath + "/api/practise", {"vocab_id": element.vocab_id, "correct": false, "type": -1}, {withCredentials: true})
         }
         else if(element.correct){
-            axios.post(basePath + "/api/practise", {"vocab_id": element.vocab_id, "correct": true}, {withCredentials: true})
+            axios.post(basePath + "/api/practise", {"vocab_id": element.vocab_id, "correct": true, "type": -1}, {withCredentials: true})
         }
     });
 }

@@ -54,7 +54,7 @@ async function selectAnswer(chosen: string){
     if(notification != null){
         notification.close();
     }
-    const data = await axios.post(basePath + "/api/practise", {"vocab_id": question.value.vocab_id, "correct": correct}, {withCredentials: true}) as Record<string, any>
+    const data = await axios.post(basePath + "/api/practise", {"vocab_id": question.value.vocab_id, "correct": correct, "type": 0}, {withCredentials: true}) as Record<string, any>
     
     if(data.data["streak"] != 0){
         message += " x" + data.data["streak"]
