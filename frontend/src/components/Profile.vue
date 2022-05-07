@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, Ref, onMounted } from 'vue'
 import { mapActions, mapGetters, useStore } from 'vuex'
 import { ActionTypes } from '../store/store'
 import { useRouter} from "vue-router"
@@ -7,8 +7,8 @@ import axios from 'axios';
 import { basePath } from '../api';
 
 type StreakInfo = {
-  best: int,
-  current: int,
+  best: number,
+  current: number,
   name: string
 }
 
