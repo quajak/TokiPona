@@ -72,8 +72,4 @@ def create_app(test_config=None):
         unset_access_cookies(res)
         return res, 401
     
-    @app.route("/hello")
-    def hello():
-        return jsonify({"hello": "world"})
-    
     return app
